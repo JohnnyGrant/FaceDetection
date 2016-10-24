@@ -34,60 +34,62 @@ import org.opencv.objdetect.CascadeClassifier;
  * @author Johnny
  */
 public class FaceRec {
+    
+    
+    //Global variables
     JFrame mainFrame = new JFrame();
     JLabel camLabel = new JLabel();
-    
-    
-    Mat webCameSrc = new Mat();
     Mat out = new Mat();
     
     
-    VideoCapture CamSource = null;
-    Mat frame = new Mat();
-    MatOfByte mem = new MatOfByte();
-    CascadeClassifier faceDetector = new CascadeClassifier(FaceRec.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
-    CascadeClassifier smileDetector = new CascadeClassifier(FaceRec.class.getResource("haarcascade_smile.xml").getPath().substring(1));
-    CascadeClassifier eyeDetector = new CascadeClassifier(FaceRec.class.getResource("haarcascade_eye.xml").getPath().substring(1));
+    VideoCapture CamSource = null; 
+    CascadeClassifier face= new CascadeClassifier(FaceRec.class.getResource("haarcascade_frontalface_alt.xml").getPath().substring(1));
+    CascadeClassifier eye = new CascadeClassifier(FaceRec.class.getResource("haarcascade_eye.xml").getPath().substring(1));
 
-    MatOfRect faceDetections = new MatOfRect();
-    MatOfRect eyeDetections = new MatOfRect();
+    MatOfRect faces = new MatOfRect();
+    MatOfRect eyes = new MatOfRect();
 
     
     
     FaceRec(){
-         CamSource = new VideoCapture(0);
-        System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
+        
+        
+        CamSource = new VideoCapture(0);        //Webcam video source
+        System.loadLibrary( Core.NATIVE_LIBRARY_NAME );   // load native opencv library
+        
+        //create GUI components to display face detections
         createFrame();
         
         
         while(true){
+            
+            
         if (CamSource.grab()) {
                         try {
-                            CamSource.retrieve(frame);
+                            CamSource.retrieve(out);
                            
-                            faceDetector.detectMultiScale(frame, faceDetections);
-                            eyeDetector.detectMultiScale(frame, eyeDetections);
+                            face.detectMultiScale(out, faces);
+                            eye.detectMultiScale(out, eyes);
 
                             
-                            for (Rect rect : faceDetections.toArray()) {
-                               // System.out.println("ttt");
-                                Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                            for (Rect rect : faces.toArray()) {
+                               
+                                Core.rectangle(out, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
                                         new Scalar(0, 255,0));
                                 
                             
                             }
-                             for (Rect rect : eyeDetections.toArray()) {
+                             for (Rect rect : eyes.toArray()) {
                                // System.out.println("ttt");
-                                Core.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
+                                Core.rectangle(out, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
                                         new Scalar(0, 255,0));
                                 
                             
                             }
-                            //Highgui.imencode(".bmp", frame, mem);
-                            //Image im = ImageIO.read(new ByteArrayInputStream(mem.toArray()));
                             
-                            BufferedImage jimg = Mat2BufferedImage(frame);
-                            camLabel.setIcon(new ImageIcon(jimg));
+                            
+                            BufferedImage img = Mat2BufferedImage(out);
+                            camLabel.setIcon(new ImageIcon(img));
                             mainFrame.pack();
                         } catch (Exception ex) {
                             System.out.println("Error");
